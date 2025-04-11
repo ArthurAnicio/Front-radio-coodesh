@@ -1,0 +1,19 @@
+:root{
+  --white: #fff;
+  --black: #000;
+  --blue: #1258CB;
+  --dark-gray: #18181B;
+  --dark-gray-scd: #2B2B30;
+  --gray: #4B4B54;
+  --light-gray: #61616C;
+}
+
+*{
+  margin: 0;
+  padding: 0;
+  font-family: Poppins;
+}
+
+body{
+  min-height: 100vh;
+}
