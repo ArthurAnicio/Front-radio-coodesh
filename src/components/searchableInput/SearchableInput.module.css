@@ -1,0 +1,27 @@
+.filter{
+    width: 55%;
+    margin-top: 2rem;
+}
+.searchBar{
+    background: var(--light-gray);
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  .searchBar::-webkit-input-placeholder {
+    color: var(--white);
+    opacity: 1;
+  }
+
+  .searchBar:focus{
+    outline: none;
+  }
+
+.suggestions{
+    background: var(--light-gray);
+    border-radius: 0.2rem;
+    padding: 5px;
+}

@@ -3,13 +3,14 @@ import RadioApi from '../../Radio-API';
 import CardRadio from '../../components/cardRadio';
 import SelectRadio from '../../components/selectRadio';
 import styles from './Home.module.css';
+import RadioStation from '../../Radio-Class';
+import SearchableInput from '../../components/searchableInput';
 
 function Home() {
   const searchPageRef = useRef<HTMLDivElement>(null);
-  const [startX, setStartX] = useState<number | null>(null);
-  const [translateX, setTranslateX] = useState<number>(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
   const [isSearchPageVisible, setIsSearchPageVisible] = useState<boolean>(false);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchCountry, setSearchCountry] = useState<string>('');
   const [searchLanguage, setSearchLanguage] = useState<string>('');
@@ -18,8 +19,49 @@ function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const radioApi = new RadioApi();
   const [favoriteRadios, setFavoriteRadios] = useState<string[]>(
-    localStorage.getItem('favoriteRadios')?.split(',') || []
+    localStorage.getItem('favoriteRadios')?.split(',').filter(Boolean) || []
   );
+  const [currentRadioUrl, setCurrentRadioUrl] = useState<string | undefined>(
+    localStorage.getItem('actual_radio') || undefined
+  );
+  const [currentRadioName, setCurrentRadioName] = useState<string | undefined>(
+    localStorage.getItem('actual_radio_name') || 'Nenhuma radio escolhida'
+  );
+  const [favoriteRadioList, setFavoriteRadioList] = useState<RadioStation[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      const fetchedCountries = await radioApi.getCountries();
+      const fetchedLanguages = await radioApi.getLanguages();
+      setCountries(fetchedCountries);
+      setLanguages(fetchedLanguages);
+    };
+
+    fetchFilters();
+  }, []);
+
+  const fetchFavoriteRadiosDetails = async () => {
+    setLoading(true);
+    const favoriteUuids = localStorage.getItem('favoriteRadios')?.split(',') || [];
+    const favoriteStations: RadioStation[] = [];
+
+    for (const uuid of favoriteUuids) {
+      if (uuid) {
+        try {
+          const radioDetails = await radioApi.searchByUuid(uuid);
+          if (radioDetails) {
+            favoriteStations.push(radioDetails);
+          }
+        } catch (error) {
+          console.error(`Erro ao buscar detalhes da rádio favorita ${uuid}:`, error);
+        }
+      }
+    }
+    setFavoriteRadioList(favoriteStations);
+    setLoading(false);
+  };
 
   useEffect(() => {
     const fetchInitialRadios = async () => {
@@ -67,49 +109,48 @@ function Home() {
       fetchSearchedRadios();
     }
   }, [searchTerm, searchCountry, searchLanguage, isSearchPageVisible, page]);
+
   useEffect(() => {
     localStorage.setItem('favoriteRadios', favoriteRadios.join(','));
+    fetchFavoriteRadiosDetails();
   }, [favoriteRadios]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartX(e.touches[0].clientX);
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || startX === null) {
-      return;
+  useEffect(() => {
+    if (!isSearchPageVisible) {
+      fetchFavoriteRadiosDetails();
     }
+  }, [isSearchPageVisible]);
 
-    const currentX = e.touches[0].clientX;
-    const deltaX = currentX - startX;
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey) {
+        localStorage.setItem('favoriteRadios', "");
+        localStorage.setItem('actual_radio', "");
+        localStorage.setItem('actual_radio_name', '');
+        setFavoriteRadios([]);
+        setCurrentRadioUrl(undefined);
+        setCurrentRadioName('Nenhuma radio escolhida');
 
-    const newTranslateX = Math.min(window.innerWidth, Math.max(0, deltaX));
-    setTranslateX(newTranslateX);
-  };
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      }
+    };
 
-  const handleTouchEnd = () => {
-    if (!isDragging || startX === null) {
-      setIsDragging(false);
-      return;
-    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-    setIsDragging(false);
-    setStartX(null);
-
-    const threshold = window.innerWidth * 0.25;
-    if (translateX > threshold) {
-      setIsSearchPageVisible(true);
-      setTranslateX(0);
-    } else {
-      setTranslateX(-window.innerWidth);
-      setIsSearchPageVisible(false);
-    }
+  const handlePlayRadio = (url: string, name: string) => {
+    setCurrentRadioUrl(url);
+    setCurrentRadioName(name);
+    localStorage.setItem('actual_radio', url);
+    localStorage.setItem('actual_radio_name', name);
   };
 
   const handleCloseSearchPage = () => {
     setIsSearchPageVisible(false);
-    setTranslateX(-window.innerWidth);
     setSearchTerm('');
     setSearchCountry('');
     setSearchLanguage('');
@@ -134,14 +175,34 @@ function Home() {
   };
 
   const toggleFavorite = (stationuuid: string) => {
-    if (favoriteRadios.includes(stationuuid)) {
-      setFavoriteRadios(favoriteRadios.filter((id) => id !== stationuuid));
-    } else {
-      setFavoriteRadios([...favoriteRadios, stationuuid]);
-    }
-  };
+    const isCurrentlyFavorite = favoriteRadios.includes(stationuuid);
+    const stationToRemove = favoriteRadioList.find(r => r.stationuuid === stationuuid);
+    const isCurrentlyPlaying = currentRadioUrl && stationToRemove && currentRadioUrl === stationToRemove.url_resolved;
 
-  const favoriteRadioList = favoriteRadios.map(uuid => ({ stationuuid: uuid }));
+    let updatedFavorites: string[];
+
+    if (isCurrentlyFavorite) {
+      updatedFavorites = favoriteRadios.filter((id) => id !== stationuuid);
+      setFavoriteRadios(updatedFavorites);
+
+      if (isCurrentlyPlaying) {
+        setCurrentRadioUrl(undefined);
+        setCurrentRadioName('Nenhuma radio escolhida');
+        localStorage.removeItem('actual_radio');
+        localStorage.removeItem('actual_radio_name');
+
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      }
+    } else {
+      updatedFavorites = [...favoriteRadios, stationuuid];
+      setFavoriteRadios(updatedFavorites);
+    }
+
+    localStorage.setItem('favoriteRadios', updatedFavorites.join(','));
+  };
 
   return (
     <div className={styles.container}>
@@ -149,8 +210,8 @@ function Home() {
         ref={searchPageRef}
         className={styles.searchPage}
         style={{
-          transform: `translateX(${isSearchPageVisible ? 0 : translateX - window.innerWidth}px)`,
-          visibility: isSearchPageVisible || translateX > 0 ? 'visible' : 'hidden',
+          transform: `translateX(${isSearchPageVisible ? 0 : -window.innerWidth}px)`,
+          visibility: isSearchPageVisible ? 'visible' : 'hidden',
         }}
       >
         <i id={styles.back} onClick={handleCloseSearchPage} className="fa-solid fa-arrow-right"></i>
@@ -161,20 +222,21 @@ function Home() {
           value={searchTerm}
           onChange={handleSearchInputChange}
         />
-        <input
-          type="text"
-          placeholder="Busque por país"
-          className={styles.searchBar}
+
+        <SearchableInput
+          label="Filtrar por país"
+          options={countries}
           value={searchCountry}
-          onChange={(e) => handleFilterChange('country', e.target.value)}
+          onChange={(value) => handleFilterChange('country', value)}
         />
-        <input
-          type="text"
-          placeholder="Busque por língua"
-          className={styles.searchBar}
+
+        <SearchableInput
+          label="Filtrar por idioma"
+          options={languages}
           value={searchLanguage}
-          onChange={(e) => handleFilterChange('language', e.target.value)}
+          onChange={(value) => handleFilterChange('language', value)}
         />
+
         <div className={styles.radioList}>
           {loading ? (
             <p>Carregando rádios...</p>
@@ -198,29 +260,40 @@ function Home() {
           </button>
         </div>
       </div>
-      <div
-        className={styles.favoritesPage}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className={styles.favoritesPage}>
         <i id={styles.search} className="fa-solid fa-magnifying-glass" onClick={() => setIsSearchPageVisible(true)}></i>
         <h1 className={styles.title}>Radio Browser</h1>
         <div className={styles.favoritesRadios}>
-          <p>FAVORITE RADIOS</p>
-          {favoriteRadioList.map((favRadio) => (
-            <CardRadio
-              key={favRadio.stationuuid}
-              name="Loading..."
-              country=""
-              countrycode=""
-              url_resolved=""
-              isPlaying={false}
-              onPlay={() => {}}
-              onRemoveFavorite={toggleFavorite}
-              stationuuid={favRadio.stationuuid}
-            />
-          ))}
+          <p>RADIOS FAVORITAS </p>
+          <div className={styles.radiosList}>
+            <audio
+              ref={audioRef}
+              className={styles.radioPlayer}
+              src={currentRadioUrl}
+              controls
+              autoPlay={!!currentRadioUrl}
+            >
+              Seu navegador não suporta o elemento de áudio.
+            </audio>
+            <p className={styles.nowPlaying}>Tocando: {currentRadioName}</p>
+            {loading ? (
+              <p>Carregando rádios favoritas...</p>
+            ) : (
+              favoriteRadioList.map((radio) => (
+                <CardRadio
+                  key={radio.stationuuid}
+                  name={radio.name}
+                  country={radio.country}
+                  countrycode={radio.countrycode}
+                  url_resolved={radio.url_resolved}
+                  isPlaying={currentRadioUrl === radio.url_resolved}
+                  onPlay={() => handlePlayRadio(radio.url_resolved, radio.name)}
+                  onRemoveFavorite={toggleFavorite}
+                  stationuuid={radio.stationuuid}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
