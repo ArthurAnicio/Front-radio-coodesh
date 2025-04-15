@@ -1,31 +1,29 @@
 /*Modelo MobileFirst*/
 
 .container {
-    position: relative;
-    width: 100vw;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  position: relative;
+  width: 100vw;
+  min-height: 100vh; 
+  overflow-x: hidden;
+}
   
-  .searchPage {
-    position: absolute;
-    top: 0;
-    left: 0; 
-    width: 100%;
-    min-height: 96.5vh;
-    background-color: var(--dark-gray-scd); 
-    color: var(--white);
-    z-index: 2;
-    transform: translateX(-100vw); 
-    transition: transform 0.3s ease-out;
-    visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 2rem;
-    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.2); 
-  }
-  
+.searchPage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  background-color: var(--dark-gray-scd);
+  color: var(--white);
+  z-index: 2;
+  transform: translateX(-100vw);
+  transition: transform 0.3s ease-out;
+  visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2rem;
+}
   .searchPage[style*="translatex(0px)"] {
     transform: translateX(0px) !important;
     visibility: visible !important;
@@ -87,7 +85,8 @@
   
   .favoritesPage {
     background: var(--dark-gray-scd);
-    min-height: 100vh;
+    height: 100vh;
+    overflow-y: scroll;
     color: var(--white);
     display: flex;
     flex-direction: column;
@@ -118,6 +117,7 @@
   .favoritesRadios {
     width: 90%;
     text-align: start;
+    margin-bottom: 5rem;
   }
   
   .favoritesRadios p {
@@ -132,19 +132,19 @@
   }
 
   .nowPlayingContainer {
-    position: fixed;
-    bottom: 0;
-    width: 95%;
+    width: 60%;
+    max-height: 8rem;
     display: flex;
     align-items: center;
     flex-direction: row;
-    margin: 1rem 0;
+    margin: 2rem 0;
     padding: 0.5rem 1rem;
-    background: var(--dark-gray);
+    background: var(--black);
     color: var(--light-gray);
+    border-radius: 2rem;
   }
   
-  .nowPlayingContainer .playResume {
+  .playResume {
     width: 20%;
     aspect-ratio: 1/1;
     border-radius: 50%;
@@ -156,8 +156,72 @@
   
   .nowPlaying {
     width: 90%;
-    font-size: 1.2rem !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
     text-align: start;
     font-style: italic;
   }
+
+
+@media (min-width: 1100px) {
+  .container {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+    overflow-y: hidden;
+    overflow-x: hidden;
+  }
+
+  .searchPage {
+    padding: 0;
+    position: static;
+    width: 25%;
+    height: 100vh;
+    overflow-y: scroll;
+    background: var(--dark-gray);
+    min-height: 100vh;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    box-shadow: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .searchPage::-webkit-scrollbar {
+    display: none; 
+  }
+
+  .favoritesPage {
+    position: static;
+    padding: 0;
+    width: 75%;
+    height: 100vh;
+    overflow-y: scroll;
+    min-height: 100vh;
+    transform: translateX(0) !important;
+    left: auto;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+  }
+
+  .favoritesPage::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nowPlayingContainer{
+    max-height: 5rem;
+  }
+
+  .nowPlaying{
+    font-size: 2rem !important;
+  }
+
+  #search {
+    display: none;
+  }
+  #back {
+    display: none;
+  }
+}

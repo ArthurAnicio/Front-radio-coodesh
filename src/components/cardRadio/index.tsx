@@ -36,7 +36,7 @@ function CardRadio({ name, country, countrycode, url_resolved, isPlaying, onPlay
         {name}
         <br />
         <div className={styles.contry}>
-          {countrycode} {country}
+          {countrycode}-{country}
         </div>
       </div>
       {onRemoveFavorite && (

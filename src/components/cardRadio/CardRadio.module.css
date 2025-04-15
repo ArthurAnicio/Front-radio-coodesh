@@ -1,5 +1,6 @@
 .cardRadio{
     width: 90%;
+    max-width: 500px;
     padding: 1rem 1rem;
     margin: 1rem 0;
     background: var(--light-gray);
@@ -41,4 +42,14 @@
 
 #remove{
     font-size: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .cardRadio{
+        max-height: 10rem;
+        width: 500px;
+    }
+    .contry{
+        display: flex;
+    }
 }

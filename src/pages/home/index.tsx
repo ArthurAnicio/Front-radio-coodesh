@@ -67,48 +67,49 @@ function Home() {
   useEffect(() => {
     const fetchInitialRadios = async () => {
       setLoading(true);
-      const radios = await radioApi.searchStations('', 'name', page, 10);
+      const radios = await radioApi.searchStations('', 'name', 1, 10); // Carrega a primeira página na montagem
       setSearchResults(radios);
       setLoading(false);
     };
 
-    if (isSearchPageVisible) {
-      setPage(1);
-      setSearchResults([]);
+    if (window.innerWidth >= 1100) {
       fetchInitialRadios();
+      setIsSearchPageVisible(true); // Garante que a página de busca seja considerada visível
     }
-  }, [isSearchPageVisible]);
+  }, []); // Executa apenas na montagem para desktop
 
   useEffect(() => {
     const fetchSearchedRadios = async () => {
       setLoading(true);
       const searchParamsPresent = searchTerm || searchCountry || searchLanguage;
+      const shouldSearch = (window.innerWidth >= 1100) || isSearchPageVisible;
 
-      if (searchParamsPresent) {
-        const radiosByName = searchTerm
-          ? await radioApi.searchStations(searchTerm, 'name', page, 10)
-          : [];
-        const radiosByCountry = searchCountry
-          ? await radioApi.searchStations(searchCountry, 'country', page, 10)
-          : [];
-        const radiosByLanguage = searchLanguage
-          ? await radioApi.searchStations(searchLanguage, 'language', page, 10)
-          : [];
-
-        const combinedResults = [...radiosByName, ...radiosByCountry, ...radiosByLanguage];
-        const uniqueResults = Array.from(new Map(combinedResults.map(radio => [radio.stationuuid, radio])).values());
-
+      if (shouldSearch) {
+        let results: any[] = [];
+        if (searchTerm) {
+          const radiosByName = await radioApi.searchStations(searchTerm, 'name', page, 10);
+          results = [...results, ...radiosByName];
+        }
+        if (searchCountry) {
+          const radiosByCountry = await radioApi.searchStations(searchCountry, 'country', page, 10);
+          results = [...results, ...radiosByCountry];
+        }
+        if (searchLanguage) {
+          const radiosByLanguage = await radioApi.searchStations(searchLanguage, 'language', page, 10);
+          results = [...results, ...radiosByLanguage];
+        }
+        const uniqueResults = Array.from(new Map(results.map(radio => [radio.stationuuid, radio])).values());
         setSearchResults(uniqueResults);
-      } else if (isSearchPageVisible) {
-        const initialRadios = await radioApi.searchStations('', 'name', page, 10);
-        setSearchResults(initialRadios);
+
+        if (!searchParamsPresent && window.innerWidth < 1100 && isSearchPageVisible) {
+          const initialRadios = await radioApi.searchStations('', 'name', page, 10);
+          setSearchResults(initialRadios);
+        }
       }
       setLoading(false);
     };
 
-    if (isSearchPageVisible) {
-      fetchSearchedRadios();
-    }
+    fetchSearchedRadios();
   }, [searchTerm, searchCountry, searchLanguage, isSearchPageVisible, page]);
 
   useEffect(() => {
@@ -251,6 +252,31 @@ function Home() {
       <div className={styles.favoritesPage}>
         <i id={styles.search} className="fa-solid fa-magnifying-glass" onClick={() => setIsSearchPageVisible(true)}></i>
         <h1 className={styles.title}>Radio Browser</h1>
+        <div className={styles.nowPlayingContainer}>
+          <div
+            className={styles.playResume}
+            onClick={() => {
+              if (currentRadioUrl && audioRef.current) {
+                if (isPlayingCurrentRadio) {
+                  audioRef.current.pause();
+                  setIsPlayingCurrentRadio(false);
+                } else {
+                  audioRef.current.play();
+                  setIsPlayingCurrentRadio(true);
+                }
+              }
+            }}
+          >
+            {isPlayingCurrentRadio ? (
+              <i className="fa-solid fa-square"></i>
+            ) : (
+              <i className="fa-solid fa-play"></i>
+            )}
+          </div>
+          <p className={styles.nowPlaying}>
+            {currentRadioUrl ? `Tocando: ${currentRadioName}` : 'Nenhuma rádio selecionada'}
+          </p>
+        </div>
         <div className={styles.favoritesRadios}>
           <p>RADIOS FAVORITAS </p>
           <div className={styles.radiosList}>
@@ -283,31 +309,6 @@ function Home() {
               ))
             )}
           </div>
-        </div>
-        <div className={styles.nowPlayingContainer} >
-          <div
-            className={styles.playResume}
-            onClick={() => {
-              if (currentRadioUrl && audioRef.current) {
-                if (isPlayingCurrentRadio) {
-                  audioRef.current.pause();
-                  setIsPlayingCurrentRadio(false);
-                }   else {
-                  audioRef.current.play();
-                  setIsPlayingCurrentRadio(true);
-                }
-              }
-            }}
-          >
-            {isPlayingCurrentRadio ? (
-              <i className="fa-solid fa-square"></i>
-            ) : (
-              <i className="fa-solid fa-play"></i>
-            )}
-          </div>
-          <p className={styles.nowPlaying}>
-            {currentRadioUrl ? `Tocando: ${currentRadioName}` : 'Nenhuma rádio selecionada'}
-          </p>
         </div>
       </div>
     </div>
