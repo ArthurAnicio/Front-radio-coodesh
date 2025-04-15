@@ -1,0 +1,39 @@
+.cardRadio{
+    width: 85%;
+    padding: 1rem 1rem;
+    margin: 2rem 0;
+    background: var(--light-gray);
+    border-radius: 0.3rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.playResume{
+    background: var(--dark-gray-scd);
+    width: 20%;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.playResume i{
+    font-size: 2.5rem;
+}
+
+.radioName{
+    padding-left: 0.5rem;
+    font-size: 1.6rem;
+    font-weight: 550;
+    width: 70%;
+}
+
+.contry{
+    display: none;
+}
+
+#remove{
+    font-size: 2.5rem;
+}

@@ -1,3 +1,105 @@
-.container{
-    background: var(--gray);
-}
+/*Modelo MobileFirst*/
+
+.container {
+    position: relative;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  .searchPage {
+    position: absolute;
+    top: 0;
+    left: 0; 
+    width: 100%;
+    min-height: 96.5vh;
+    background-color: var(--dark-gray-scd); 
+    color: var(--white);
+    z-index: 2;
+    transform: translateX(-100vw); 
+    transition: transform 0.3s ease-out;
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 2rem;
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.2); 
+  }
+  
+  .searchPage[style*="translatex(0px)"] {
+    transform: translateX(0px) !important;
+    visibility: visible !important;
+  }
+
+  #filter{
+    position: fixed;
+    top: 1rem;
+    right: 2rem;
+    font-size: 3rem;
+    color: var(--blue);
+    z-index: 3;
+  }
+
+  .searchBar{
+    width: 55%;
+    margin-top: 3rem;
+    background: var(--light-gray);
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+
+  .searchBar::-webkit-input-placeholder {
+    color: var(--white);
+    opacity: 1;
+  }
+
+  .radioList{
+    margin-top: 2rem;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .favoritesPage {
+    background: var(--dark-gray-scd);
+    min-height: 100vh;
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    touch-action: pan-y;
+    transform: translateX(0); 
+  }
+  
+  #search {
+    position: fixed;
+    top: 1rem;
+    right: 2rem;
+    font-size: 2rem;
+    color: var(--blue);
+    z-index: 3;
+  }
+  
+  .title {
+    margin: 2.5rem;
+    font-weight: 500;
+  }
+  
+  .favoritesRadios {
+    width: 90%;
+    text-align: start;
+  }
+  
+  .favoritesRadios p {
+    font-size: 1em;
+    font-weight: 300;
+  }
