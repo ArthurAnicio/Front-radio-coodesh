@@ -1,25 +1,31 @@
-.cardRadio{
+.cardRadio {
     width: 90%;
     max-width: 500px;
-    padding: 1rem 1rem;
-    margin: 1rem 0;
-    background: var(--light-gray);
+    background-color: var(--gray-800);
     border-radius: 1rem;
+    padding: 1rem;
+    margin: 1rem auto;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    color: var(--black);
-}
+    gap: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: var(--transition);
+  }
+
+  .cardRadio:hover {
+    transform: scale(1.01);
+    background-color: var(--gray-700);
+  }
 
 .playResume{
-    background: var(--dark-gray-scd);
-    color: var(--black);
+    color: var(--accent);
     width: 20%;
     aspect-ratio: 1/1;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
 }
 
 .playResume i{
@@ -27,13 +33,12 @@
 }
 
 .radioName{
-    padding-left: 0.5rem;
-    font-size: 1.6rem;
-    font-weight: 550;
     width: 70%;
-    white-space: nowrap;
-    overflow: hidden;    
-    text-overflow: ellipsis;
+  font-size: 1.5rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contry{
@@ -41,7 +46,9 @@
 }
 
 #remove{
-    font-size: 2.5rem;
+    font-size: 2rem;
+    color: var(--error);
+    cursor: pointer;
 }
 
 @media (min-width: 1024px) {
