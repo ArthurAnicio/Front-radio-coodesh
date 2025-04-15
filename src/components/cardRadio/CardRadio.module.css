@@ -1,12 +1,13 @@
 .cardRadio{
     width: 90%;
     padding: 1rem 1rem;
-    margin: 2rem 0;
+    margin: 1rem 0;
     background: var(--light-gray);
-    border-radius: 0.3rem;
+    border-radius: 1rem;
     display: flex;
     flex-direction: row;
     align-items: center;
+    color: var(--black);
 }
 
 .playResume{
@@ -29,6 +30,9 @@
     font-size: 1.6rem;
     font-weight: 550;
     width: 70%;
+    white-space: nowrap;
+    overflow: hidden;    
+    text-overflow: ellipsis;
 }
 
 .contry{

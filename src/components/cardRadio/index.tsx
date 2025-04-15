@@ -7,13 +7,18 @@ interface CardRadioProps {
   url_resolved: string;
   isPlaying: boolean;
   onPlay: (url: string) => void;
+  onStop: () => void; 
   onRemoveFavorite?: (uuid: string) => void;
   stationuuid?: string;
 }
 
-function CardRadio({ name, country, countrycode, url_resolved, isPlaying, onPlay, onRemoveFavorite, stationuuid }: CardRadioProps) {
+function CardRadio({ name, country, countrycode, url_resolved, isPlaying, onPlay, onStop, onRemoveFavorite, stationuuid }: CardRadioProps) {
   const handlePlayClick = () => {
-    onPlay(url_resolved);
+    if (isPlaying) {
+      onStop();
+    } else {
+      onPlay(url_resolved);
+    }
   };
 
   const handleRemoveClick = () => {
@@ -23,7 +28,7 @@ function CardRadio({ name, country, countrycode, url_resolved, isPlaying, onPlay
   };
 
   return (
-    <div className={styles.cardRadio}>
+    <div className={styles.cardRadio} >
       <div className={styles.playResume} onClick={handlePlayClick}>
         {isPlaying ? <i className="fa-solid fa-square"></i> : <i className="fa-solid fa-play"></i>}
       </div>

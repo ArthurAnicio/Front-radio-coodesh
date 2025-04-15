@@ -130,16 +130,34 @@
     flex-direction: column;
     align-items: center;
   }
+
+  .nowPlayingContainer {
+    position: fixed;
+    bottom: 0;
+    width: 95%;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    background: var(--dark-gray);
+    color: var(--light-gray);
+  }
   
-  .radioPlayer {
-    width: 90%;
-    margin: 1rem;
+  .nowPlayingContainer .playResume {
+    width: 20%;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
   }
   
   .nowPlaying {
     width: 90%;
-    text-align: center;
-    margin-bottom: 1rem;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    text-align: start;
     font-style: italic;
-    color: var(--light-gray);
   }

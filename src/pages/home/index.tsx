@@ -30,6 +30,7 @@ function Home() {
   const [favoriteRadioList, setFavoriteRadioList] = useState<RadioStation[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [isPlayingCurrentRadio, setIsPlayingCurrentRadio] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -121,32 +122,27 @@ function Home() {
     }
   }, [isSearchPageVisible]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey) {
-        localStorage.setItem('favoriteRadios', "");
-        localStorage.setItem('actual_radio', "");
-        localStorage.setItem('actual_radio_name', '');
-        setFavoriteRadios([]);
-        setCurrentRadioUrl(undefined);
-        setCurrentRadioName('Nenhuma radio escolhida');
-
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.src = '';
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const handlePlayRadio = (url: string, name: string) => {
     setCurrentRadioUrl(url);
     setCurrentRadioName(name);
     localStorage.setItem('actual_radio', url);
     localStorage.setItem('actual_radio_name', name);
+    setIsPlayingCurrentRadio(true);
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
+  const handleStopRadio = () => {
+    setCurrentRadioUrl(undefined);
+    setCurrentRadioName('Nenhuma radio escolhida');
+    localStorage.removeItem('actual_radio');
+    localStorage.removeItem('actual_radio_name');
+    setIsPlayingCurrentRadio(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
   };
 
   const handleCloseSearchPage = () => {
@@ -186,15 +182,7 @@ function Home() {
       setFavoriteRadios(updatedFavorites);
 
       if (isCurrentlyPlaying) {
-        setCurrentRadioUrl(undefined);
-        setCurrentRadioName('Nenhuma radio escolhida');
-        localStorage.removeItem('actual_radio');
-        localStorage.removeItem('actual_radio_name');
-
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.src = '';
-        }
+        handleStopRadio();
       }
     } else {
       updatedFavorites = [...favoriteRadios, stationuuid];
@@ -270,12 +258,12 @@ function Home() {
               ref={audioRef}
               className={styles.radioPlayer}
               src={currentRadioUrl}
-              controls
+              controls={false}
               autoPlay={!!currentRadioUrl}
+              style={{ display: 'none' }}
             >
               Seu navegador não suporta o elemento de áudio.
             </audio>
-            <p className={styles.nowPlaying}>Tocando: {currentRadioName}</p>
             {loading ? (
               <p>Carregando rádios favoritas...</p>
             ) : (
@@ -286,14 +274,40 @@ function Home() {
                   country={radio.country}
                   countrycode={radio.countrycode}
                   url_resolved={radio.url_resolved}
-                  isPlaying={currentRadioUrl === radio.url_resolved}
+                  isPlaying={currentRadioUrl === radio.url_resolved && isPlayingCurrentRadio}
                   onPlay={() => handlePlayRadio(radio.url_resolved, radio.name)}
+                  onStop={handleStopRadio}
                   onRemoveFavorite={toggleFavorite}
                   stationuuid={radio.stationuuid}
                 />
               ))
             )}
           </div>
+        </div>
+        <div className={styles.nowPlayingContainer} >
+          <div
+            className={styles.playResume}
+            onClick={() => {
+              if (currentRadioUrl && audioRef.current) {
+                if (isPlayingCurrentRadio) {
+                  audioRef.current.pause();
+                  setIsPlayingCurrentRadio(false);
+                }   else {
+                  audioRef.current.play();
+                  setIsPlayingCurrentRadio(true);
+                }
+              }
+            }}
+          >
+            {isPlayingCurrentRadio ? (
+              <i className="fa-solid fa-square"></i>
+            ) : (
+              <i className="fa-solid fa-play"></i>
+            )}
+          </div>
+          <p className={styles.nowPlaying}>
+            {currentRadioUrl ? `Tocando: ${currentRadioName}` : 'Nenhuma rádio selecionada'}
+          </p>
         </div>
       </div>
     </div>
