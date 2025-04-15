@@ -11,6 +11,7 @@
 
 .playResume{
     background: var(--dark-gray-scd);
+    color: var(--black);
     width: 20%;
     aspect-ratio: 1/1;
     border-radius: 50%;

@@ -31,6 +31,7 @@ function Home() {
 
     if (isSearchPageVisible) {
       setPage(1);
+      setSearchResults([]);
       fetchInitialRadios();
     }
   }, [isSearchPageVisible]);
@@ -38,30 +39,34 @@ function Home() {
   useEffect(() => {
     const fetchSearchedRadios = async () => {
       setLoading(true);
-      const radiosByName = searchTerm
-        ? await radioApi.searchStations(searchTerm, 'name', page, 10)
-        : [];
-      const radiosByCountry = searchCountry
-        ? await radioApi.searchStations(searchCountry, 'country', page, 10)
-        : [];
-      const radiosByLanguage = searchLanguage
-        ? await radioApi.searchStations(searchLanguage, 'language', page, 10)
-        : [];
+      const searchParamsPresent = searchTerm || searchCountry || searchLanguage;
 
-      // Combine and remove duplicates (simplistic approach, adjust as needed)
-      const combinedResults = [...radiosByName, ...radiosByCountry, ...radiosByLanguage];
-      const uniqueResults = Array.from(new Map(combinedResults.map(radio => [radio.stationuuid, radio])).values());
+      if (searchParamsPresent) {
+        const radiosByName = searchTerm
+          ? await radioApi.searchStations(searchTerm, 'name', page, 10)
+          : [];
+        const radiosByCountry = searchCountry
+          ? await radioApi.searchStations(searchCountry, 'country', page, 10)
+          : [];
+        const radiosByLanguage = searchLanguage
+          ? await radioApi.searchStations(searchLanguage, 'language', page, 10)
+          : [];
 
-      setSearchResults(uniqueResults);
+        const combinedResults = [...radiosByName, ...radiosByCountry, ...radiosByLanguage];
+        const uniqueResults = Array.from(new Map(combinedResults.map(radio => [radio.stationuuid, radio])).values());
+
+        setSearchResults(uniqueResults);
+      } else if (isSearchPageVisible) {
+        const initialRadios = await radioApi.searchStations('', 'name', page, 10);
+        setSearchResults(initialRadios);
+      }
       setLoading(false);
     };
 
     if (isSearchPageVisible) {
-      setPage(1);
       fetchSearchedRadios();
     }
-  }, [searchTerm, searchCountry, searchLanguage, isSearchPageVisible]);
-
+  }, [searchTerm, searchCountry, searchLanguage, isSearchPageVisible, page]);
   useEffect(() => {
     localStorage.setItem('favoriteRadios', favoriteRadios.join(','));
   }, [favoriteRadios]);
@@ -108,10 +113,14 @@ function Home() {
     setSearchTerm('');
     setSearchCountry('');
     setSearchLanguage('');
+    setPage(1);
+    setSearchResults([]);
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setPage(1);
+    setSearchResults([]);
   };
 
   const handleFilterChange = (type: 'country' | 'language', value: string) => {
@@ -120,6 +129,8 @@ function Home() {
     } else if (type === 'language') {
       setSearchLanguage(value);
     }
+    setPage(1);
+    setSearchResults([]);
   };
 
   const toggleFavorite = (stationuuid: string) => {
@@ -130,7 +141,7 @@ function Home() {
     }
   };
 
-  const favoriteRadioList = favoriteRadios.map(uuid => ({ stationuuid: uuid })); // Simplistic
+  const favoriteRadioList = favoriteRadios.map(uuid => ({ stationuuid: uuid }));
 
   return (
     <div className={styles.container}>
@@ -142,31 +153,31 @@ function Home() {
           visibility: isSearchPageVisible || translateX > 0 ? 'visible' : 'hidden',
         }}
       >
-        <i id={styles.filter} className="fa-solid fa-bars"></i>
+        <i id={styles.back} onClick={handleCloseSearchPage} className="fa-solid fa-arrow-right"></i>
         <input
           type="text"
-          placeholder="Search here"
+          placeholder="Nome da rádio"
           className={styles.searchBar}
           value={searchTerm}
           onChange={handleSearchInputChange}
         />
-        <div className={styles.filterOptions}>
-          <input
-            type="text"
-            placeholder="Filter by country"
-            value={searchCountry}
-            onChange={(e) => handleFilterChange('country', e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Filter by language"
-            value={searchLanguage}
-            onChange={(e) => handleFilterChange('language', e.target.value)}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Busque por país"
+          className={styles.searchBar}
+          value={searchCountry}
+          onChange={(e) => handleFilterChange('country', e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Busque por língua"
+          className={styles.searchBar}
+          value={searchLanguage}
+          onChange={(e) => handleFilterChange('language', e.target.value)}
+        />
         <div className={styles.radioList}>
           {loading ? (
-            <p>Loading radios...</p>
+            <p>Carregando rádios...</p>
           ) : (
             searchResults.map((radio: any) => (
               <SelectRadio
@@ -178,9 +189,14 @@ function Home() {
               />
             ))
           )}
-          <button onClick={() => setPage(prev => prev + 1)}>Load More</button>
+          <button
+            className={styles.loadButton}
+            onClick={() => setPage(prev => prev + 1)}
+            disabled={loading}
+          >
+            {loading ? 'Carregando...' : 'Carregue mais'}
+          </button>
         </div>
-        <button onClick={handleCloseSearchPage}>Close Search</button>
       </div>
       <div
         className={styles.favoritesPage}
@@ -193,7 +209,17 @@ function Home() {
         <div className={styles.favoritesRadios}>
           <p>FAVORITE RADIOS</p>
           {favoriteRadioList.map((favRadio) => (
-            <CardRadio key={favRadio.stationuuid} name="Loading..." country="" countrycode="" url_resolved="" isPlaying={false} onPlay={() => {}} />
+            <CardRadio
+              key={favRadio.stationuuid}
+              name="Loading..."
+              country=""
+              countrycode=""
+              url_resolved=""
+              isPlaying={false}
+              onPlay={() => {}}
+              onRemoveFavorite={toggleFavorite}
+              stationuuid={favRadio.stationuuid}
+            />
           ))}
         </div>
       </div>

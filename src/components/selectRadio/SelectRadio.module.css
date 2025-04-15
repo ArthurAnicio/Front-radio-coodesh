@@ -9,10 +9,13 @@
     border-radius: 1rem;
 }
 
-.radioName{
+.radioName {
     width: 90%;
     font-size: 2rem;
-}
+    white-space: nowrap;
+    overflow: hidden;    
+    text-overflow: ellipsis; 
+  }
 
 #check{
     color: var(--blue);
