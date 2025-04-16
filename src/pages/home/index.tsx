@@ -64,53 +64,37 @@ function Home() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    const fetchInitialRadios = async () => {
-      setLoading(true);
-      const radios = await radioApi.searchStations('', 'name', 1, 10); // Carrega a primeira página na montagem
-      setSearchResults(radios);
-      setLoading(false);
-    };
-
-    if (window.innerWidth >= 1100) {
-      fetchInitialRadios();
-      setIsSearchPageVisible(true); // Garante que a página de busca seja considerada visível
-    }
-  }, []); // Executa apenas na montagem para desktop
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
+  };
 
   useEffect(() => {
-    const fetchSearchedRadios = async () => {
+    const fetchRadios = async () => {
       setLoading(true);
-      const searchParamsPresent = searchTerm || searchCountry || searchLanguage;
-      const shouldSearch = (window.innerWidth >= 1100) || isSearchPageVisible;
+      let newResults: any[] = [];
 
-      if (shouldSearch) {
-        let results: any[] = [];
-        if (searchTerm) {
-          const radiosByName = await radioApi.searchStations(searchTerm, 'name', page, 10);
-          results = [...results, ...radiosByName];
-        }
-        if (searchCountry) {
-          const radiosByCountry = await radioApi.searchStations(searchCountry, 'country', page, 10);
-          results = [...results, ...radiosByCountry];
-        }
-        if (searchLanguage) {
-          const radiosByLanguage = await radioApi.searchStations(searchLanguage, 'language', page, 10);
-          results = [...results, ...radiosByLanguage];
-        }
-        const uniqueResults = Array.from(new Map(results.map(radio => [radio.stationuuid, radio])).values());
-        setSearchResults(uniqueResults);
-
-        if (!searchParamsPresent && window.innerWidth < 1100 && isSearchPageVisible) {
-          const initialRadios = await radioApi.searchStations('', 'name', page, 10);
-          setSearchResults(initialRadios);
-        }
+      if (searchTerm) {
+        const radiosByName = await radioApi.searchStations(searchTerm, 'name', page, 10);
+        newResults = [...newResults, ...radiosByName];
+      } else if (searchCountry) {
+        const radiosByCountry = await radioApi.searchStations(searchCountry, 'country', page, 10);
+        newResults = [...newResults, ...radiosByCountry];
+      } else if (searchLanguage) {
+        const radiosByLanguage = await radioApi.searchStations(searchLanguage, 'language', page, 10);
+        newResults = [...newResults, ...radiosByLanguage];
+      } else if (window.innerWidth >= 1100 || isSearchPageVisible) {
+        const initialRadios = await radioApi.searchStations('', 'name', page, 10);
+        newResults = [...newResults, ...initialRadios];
       }
+
+      const uniqueNewResults = Array.from(new Map(newResults.map(radio => [radio.stationuuid, radio])).values());
+      setSearchResults(uniqueNewResults); 
+
       setLoading(false);
     };
 
-    fetchSearchedRadios();
-  }, [searchTerm, searchCountry, searchLanguage, isSearchPageVisible, page]);
+    fetchRadios();
+  }, [searchTerm, searchCountry, searchLanguage, page, isSearchPageVisible]);
 
   useEffect(() => {
     localStorage.setItem('favoriteRadios', favoriteRadios.join(','));
@@ -118,10 +102,21 @@ function Home() {
   }, [favoriteRadios]);
 
   useEffect(() => {
-    if (!isSearchPageVisible) {
+    if (!isSearchPageVisible && window.innerWidth < 1100) {
       fetchFavoriteRadiosDetails();
     }
   }, [isSearchPageVisible]);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1100) {
+      setIsSearchPageVisible(true);
+      setPage(1);
+      setSearchResults([]);
+    } else {
+      setPage(1);
+      setSearchResults([]);
+    }
+  }, [window.innerWidth]);
 
   const handlePlayRadio = (url: string, name: string) => {
     setCurrentRadioUrl(url);
@@ -242,7 +237,7 @@ function Home() {
           )}
           <button
             className={styles.loadButton}
-            onClick={() => setPage(prev => prev + 1)}
+            onClick={handleLoadMore}
             disabled={loading}
           >
             {loading ? 'Carregando...' : 'Carregue mais'}
