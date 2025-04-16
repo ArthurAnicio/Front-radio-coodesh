@@ -4,9 +4,9 @@ Disponível em https://front-radio-coodesh.vercel.app/
 
 Aplicação para busca, filtragem e favoritamento de rádios online do mundo todo.
 
-![tela_desktop](public/desktop.png)
+![tela_desktop](https://github.com/ArthurAnicio/Front-radio-coodesh/blob/main/public/desktop.png)
 
-![tela_mobile](public/mobile.png)
+![tela_mobile](https://github.com/ArthurAnicio/Front-radio-coodesh/blob/main/public/mobile.png)
 
 ## 🧾 Descrição
 
