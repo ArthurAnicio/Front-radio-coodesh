@@ -3,8 +3,8 @@ import RadioStation from './Radio-Class';
 
 class RadioApi {
   
-  private baseUrl = 'http://at1.api.radio-browser.info/json/stations/';
-  private filtersUrl = 'http://at1.api.radio-browser.info/json/'
+  private baseUrl = 'https://at1.api.radio-browser.info/json/stations/';
+  private filtersUrl = 'https://at1.api.radio-browser.info/json/'
 
   async searchStations(
     filter: string,
