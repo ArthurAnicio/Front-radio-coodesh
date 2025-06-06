@@ -132,8 +132,8 @@
     width: 60%;
     max-height: 10rem;
     display: flex;
-    align-items: center;
     flex-direction: row;
+    align-items: center;
     margin: 2rem 0;
     padding: 1rem;
     background: var(--black);
@@ -145,7 +145,6 @@
     width: 20%;
     aspect-ratio: 1/1;
     margin-right: 5px;
-    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -159,7 +158,77 @@
     font-weight: 600 !important;
     text-align: start;
     font-style: italic;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    
   }
+
+  .volumeContainer {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    max-width: 500px;
+    padding: 1rem 5%;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  #volumeIcon{
+    width: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+  }
+  .volumeSlider {
+  width: 80%;
+  height: 4px;
+  appearance: none;
+  background: #ccc;
+  border-radius: 2px;
+  outline: none;
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.volumeSlider:hover {
+  background: #aaa;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #555;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.volumeSlider::-webkit-slider-thumb:hover {
+  background: #333;
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #555;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.volumeSlider::-moz-range-thumb:hover {
+  background: #333;
+}
 
 
 @media (min-width: 1100px) {
@@ -215,6 +284,7 @@
 
   .nowPlaying{
     font-size: 2rem !important;
+    
   }
 
   #search {
